@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aentho Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // ─── INITIAL DATA ─────────────────────────────────────────────────────────
+        const INITIAL_PRODUCTS = [
+          { id: 1, name: "Burger", emoji: "🍔", category: "Fast Food", stock: 120, price: 4.99, sold: 87 },
+          { id: 2, name: "Fries",  emoji: "🍟", category: "Fast Food", stock: 95,  price: 2.49, sold: 64 },
+          { id: 3, name: "Cold Drink", emoji: "🧃", category: "Beverages", stock: 80, price: 1.99, sold: 53 },
+          { id: 4, name: "Bread",  emoji: "🍞", category: "Bakery",    stock: 70,  price: 2.29, sold: 42 },
+          { id: 5, name: "Milk",   emoji: "🥛", category: "Dairy",     stock: 40,  price: 1.79, sold: 35 },
+          { id: 6, name: "Pizza Slice", emoji: "🍕", category: "Fast Food", stock: 55, price: 4.49, sold: 61 },
+          { id: 7, name: "Rice",   emoji: "🍚", category: "Grains",    stock: 65,  price: 3.49, sold: 28 },
+          { id: 8, name: "Chicken Pack", emoji: "🍗", category: "Meat", stock: 35, price: 7.99, sold: 44 },
+          { id: 9, name: "Candy",  emoji: "🍬", category: "Snacks",    stock: 100, price: 0.99, sold: 72 },
+        ];
+
+        const INITIAL_SALES = [
+          { id: 1, product: "Burger",      emoji: "🍔", qty: 3, amount: 14.97, date: "2025-05-15" },
+          { id: 2, product: "Fries",       emoji: "🍟", qty: 5, amount: 12.45, date: "2025-05-15" },
+          { id: 3, product: "Cold Drink",  emoji: "🧃", qty: 2, amount:  3.98, date: "2025-05-15" },
+          { id: 4, product: "Pizza Slice", emoji: "🍕", qty: 4, amount: 17.96, date: "2025-05-14" },
+          { id: 5, product: "Chicken Pack",emoji: "🍗", qty: 2, amount: 15.98, date: "2025-05-14" },
+          { id: 6, product: "Candy",       emoji: "🍬", qty: 8, amount:  7.92, date: "2025-05-13" },
+          { id: 7, product: "Milk",        emoji: "🥛", qty: 3, amount:  5.37, date: "2025-05-13" },
+          { id: 8, product: "Rice",        emoji: "🍚", qty: 2, amount:  6.98, date: "2025-05-12" },
+        ];
+
+        const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const CHART_DATA = [28, 42, 38, 55, 62, 58, 74, 68, 82, 79, 91, 88];
+
+        // ─── COLOUR TOKENS ────────────────────────────────────────────────────────
+        const TOKEN = {
+          light: {
+            bg:        "#f5f7fb",
+            surface:   "#ffffff",
+            sidebar:   "#ffffff",
+            border:    "#e8edf5",
+            borderHov: "#c5d2e8",
+            text:      "#0f172a",
+            sub:       "#64748b",
+            muted:     "#94a3b8",
+            accent:    "#2563eb",
+            accentBg:  "#eff6ff",
+            accentSub: "#93c5fd",
+            green:     "#10b981",
+            greenBg:   "#ecfdf5",
+            amber:     "#f59e0b",
+            amberBg:   "#fffbeb",
+            red:       "#ef4444",
+            redBg:     "#fef2f2",
+            shadow:    "0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.04)",
+            shadowMd:  "0 4px 24px rgba(15,23,42,.09)",
+            shadowLg:  "0 8px 40px rgba(15,23,42,.12)",
+          },
+          dark: {
+            bg:        "#0f1117",
+            surface:   "#1a1d27",
+            sidebar:   "#141720",
+            border:    "#252836",
+            borderHov: "#363a50",
+            text:      "#f1f5f9",
+            sub:       "#94a3b8",
+            muted:     "#475569",
+            accent:    "#3b82f6",
+            accentBg:  "rgba(59,130,246,.12)",
+            accentSub: "#60a5fa",
+            green:     "#10b981",
+            greenBg:   "rgba(16,185,129,.12)",
+            amber:     "#f59e0b",
+            amberBg:   "rgba(245,158,11,.12)",
+            red:       "#ef4444",
+            redBg:     "rgba(239,68,68,.12)",
+            shadow:    "0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2)",
+            shadowMd:  "0 4px 24px rgba(0,0,0,.4)",
+            shadowLg:  "0 8px 40px rgba(0,0,0,.5)",
+          }
+        };
+
+        // ─── CSS INJECTION ────────────────────────────────────────────────────────
+        const CSS = `
+        @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist:wght@300;400;500;600&display=swap');
+
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html,body,#root{height:100%;font-family:'Geist',system-ui,sans-serif}
+        body{transition:background .3s}
+
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{border-radius:10px;background:rgba(100,116,139,.25)}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.45)}
+
+        .app{display:flex;height:100%;overflow:hidden}
+        .sidebar{width:240px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);transition:width .3s,background .3s}
+        .sidebar.collapsed{width:68px}
+        .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+        .topbar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--border);flex-shrink:0;backdrop-filter:blur(8px);position:sticky;top:0;z-index:40}
+        .content{flex:1;overflow-y:auto;padding:28px}
+
+        /* Logo */
+        .logo-area{display:flex;align-items:center;gap:10px;padding:20px 18px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+        .logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;color:white}
+        .logo-name{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.5px;white-space:nowrap;overflow:hidden;transition:opacity .2s,max-width .3s}
+
+        /* Nav */
+        .nav-section{padding:14px 10px 4px;font-size:10.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;transition:opacity .2s}
+        .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;margin:1px 8px;border-radius:10px;cursor:pointer;transition:all .18s;font-size:13.5px;font-weight:500;position:relative;white-space:nowrap}
+        .nav-item .ni-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+        .nav-item .ni-label{overflow:hidden;transition:opacity .2s,max-width .3s}
+        .nav-item .ni-badge{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;flex-shrink:0}
+        .nav-item:hover{background:var(--accentBg)}
+        .nav-item.active{background:var(--accentBg);color:var(--accent)}
+        .nav-item.active::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:var(--accent)}
+        .nav-item.danger:hover{background:var(--redBg);color:var(--red)}
+        .sidebar-bottom{margin-top:auto;padding:12px 0;border-top:1px solid var(--border)}
+
+        /* Cards */
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s,background .3s}
+        .card:hover{box-shadow:var(--shadowMd)}
+        .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+        @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:640px){.kpi-grid{grid-template-columns:1fr}}
+        .kpi-card{padding:20px 22px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;border-radius:16px}
+        .kpi-card::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;background:currentColor;transition:opacity .2s}
+        .kpi-card:hover::after{opacity:.1}
+
+        /* Charts */
+        .charts-row{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+        @media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+        .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+        .section-title{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.3px}
+
+        /* Line chart */
+        .line-chart-wrap{position:relative;height:200px}
+        .chart-svg{width:100%;height:100%;overflow:visible}
+        .grid-line{stroke:var(--border);stroke-width:1}
+        .chart-path{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+        .chart-area{fill:url(#chartGrad)}
+        .chart-dot{fill:var(--surface);stroke:var(--accent);stroke-width:2;cursor:pointer;transition:r .15s}
+        .chart-dot:hover{r:5}
+        .chart-labels{display:flex;justify-content:space-between;margin-top:8px}
+        .chart-label{font-size:11px;color:var(--muted);text-align:center;flex:1}
+
+        /* Donut */
+        .donut-wrap{display:flex;align-items:center;gap:24px}
+        .donut-svg{flex-shrink:0;overflow:visible}
+        .donut-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+        .legend-row{display:flex;align-items:center;gap:10px;font-size:13px}
+        .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+        .legend-name{flex:1;color:var(--sub)}
+        .legend-pct{font-weight:600;font-size:13px}
+
+        /* Tables */
+        .data-table{width:100%;border-collapse:collapse}
+        .data-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+        .data-table td{padding:12px 14px;font-size:13.5px;border-bottom:1px solid var(--border);transition:background .15s}
+        .data-table tr:last-child td{border-bottom:none}
+        .data-table tbody tr:hover td{background:var(--accentBg)}
+        .data-table .td-product{display:flex;align-items:center;gap:10px}
+        .td-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500}
+
+        /* Quick actions */
+        .qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+        @media(max-width:800px){.qa-grid{grid-template-columns:repeat(2,1fr)}}
+        .qa-btn{padding:18px 14px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all .2s;border:1.5px solid var(--border);background:var(--surface)}
+        .qa-btn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadowMd)}
+        .qa-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .2s}
+        .qa-btn:hover .qa-icon{transform:scale(1.1)}
+        .qa-label{font-size:12.5px;font-weight:500;text-align:center;color:var(--sub)}
+
+        /* Topbar */
+        .tb-icon-btn{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;font-size:18px;border:1.5px solid var(--border);background:transparent;color:var(--text)}
+        .tb-icon-btn:hover{border-color:var(--borderHov);background:var(--accentBg)}
+        .notif-wrap{position:relative}
+        .notif-badge{position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--surface)}
+        .avatar-btn{height:38px;padding:0 12px 0 4px;border-radius:10px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:all .18s;border:1.5px solid var(--border);background:var(--surface);color:var(--text)}
+        .avatar-btn:hover{border-color:var(--borderHov)}
+        .avatar-img{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white}
+        .avatar-name{font-size:13px;font-weight:500}
+
+        /* Back button */
+        .back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;border:1.5px solid var(--border);background:transparent;color:var(--text);margin-bottom:20px}
+        .back-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accentBg)}
+
+        /* Forms */
+        .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.35);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+        .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:460px;box-shadow:var(--shadowLg);animation:modalIn .25s cubic-bezier(.16,1,.3,1)}
+        @keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+        .modal-title{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:700;margin-bottom:22px;letter-spacing:-.4px}
+        .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+        .field label{font-size:11.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+        .field input,.field select{padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s}
+        .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+        .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .btn{padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;border:none;font-family:inherit}
+        .btn-primary{background:linear-gradient(135deg,#2563eb,#3b82f6);color:white;box-shadow:0 4px 14px rgba(37,99,235,.25)}
+        .btn-primary:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.35)}
+        .btn-primary:active{transform:none}
+        .btn-ghost{background:var(--bg);border:1.5px solid var(--border);color:var(--sub)}
+        .btn-ghost:hover{border-color:var(--borderHov);color:var(--text)}
+        .btn-danger{background:var(--redBg);color:var(--red);border:1.5px solid transparent}
+        .btn-danger:hover{background:var(--red);color:white}
+        .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+        /* Toast */
+        .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+        .toast{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadowLg);animation:toastIn .35s cubic-bezier(.16,1,.3,1)}
+        @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+        .toast.exit{animation:toastOut .3s forwards}
+        @keyframes toastOut{to{opacity:0;transform:translateX(20px)}}
+        .toast-icon{font-size:20px;flex-shrink:0}
+        .toast-msg{font-size:13.5px;font-weight:500}
+        .toast-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+        /* Products page */
+        .prod-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+        .search-input{padding:9px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:13.5px;outline:none;transition:border-color .15s,box-shadow .15s}
+        .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+        .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+        .prod-card{padding:18px;border-radius:16px;cursor:pointer;transition:all .2s}
+        .prod-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--shadowMd)}
+        .prod-emoji{font-size:32px;margin-bottom:10px}
+        .prod-stock-bar{height:4px;border-radius:4px;background:var(--border);margin-top:6px;overflow:hidden}
+        .prod-stock-fill{height:100%;border-radius:4px;transition:width .6s}
+
+        /* Page animations */
+        .page-enter{animation:pageIn .3s cubic-bezier(.16,1,.3,1)}
+        @keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+        /* Chip */
+        .chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500}
+
+        /* Responsive */
+        @media(max-width:768px){
+          .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .3s;width:240px!important}
+          .sidebar.mobile-open{transform:none}
+          .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:49;display:none}
+          .sidebar-overlay.show{display:block}
+          .topbar{padding:0 16px}
+          .content{padding:16px}
+          .kpi-grid{grid-template-columns:1fr 1fr}
+          .charts-row{grid-template-columns:1fr}
+          .qa-grid{grid-template-columns:1fr 1fr}
+        }
+        `;
+
+        // ─── HELPERS ──────────────────────────────────────────────────────────
+        function fmt(n) { return "$"+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+        function fmtDate(d) {
+          const dt = new Date(d);
+          return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        }
+
+        // ─── COMPONENTS ─────────────────────────────────────────────────────────
+
+        function Logo({collapsed}) {
+          return (
+            <div className="logo-area">
+              <div className="logo-mark">A</div>
+              <span className="logo-name" style={{opacity:collapsed?0:1,maxWidth:collapsed?0:120}}>Aentho</span>
+            </div>
+          );
+        }
+
+        function NavItem({icon,label,badge,active,danger,onClick,collapsed}) {
+          return (
+            <div className={`nav-item${active?" active":""}${danger?" danger":""}`} onClick={onClick}
+              title={collapsed?label:""}>
+              <span className="ni-icon">{icon}</span>
+              <span className="ni-label" style={{opacity:collapsed?0:1,maxWidth:collapsed?0:160}}>{label}</span>
+              {badge && !collapsed && <span className="ni-badge" style={{background:"var(--redBg)",color:"var(--red)"}}>{badge}</span>}
+            </div>
+          );
+        }
+
+        function KpiCard({label,value,icon,color,trend}) {
+          const colorMap = {
+            blue:  {text:"var(--accent)",bg:"var(--accentBg)"},
+            green: {text:"var(--green)", bg:"var(--greenBg)"},
+            amber: {text:"var(--amber)", bg:"var(--amberBg)"},
+            red:   {text:"var(--red)",   bg:"var(--redBg)"},
+          };
+          const c = colorMap[color];
+          return (
+            <div className="card kpi-card" style={{color:c.text}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:12,fontWeight:600,letterSpacing:.5,textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
+                <div style={{width:38,height:38,borderRadius:10,background:c.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19}}>{icon}</div>
+              </div>
+              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:30,fontWeight:800,letterSpacing:-1,color:c.text}}>{value}</div>
+              {trend && <div style={{fontSize:12,color:"var(--green)",display:"flex",alignItems:"center",gap:4}}>▲ {trend}</div>}
+            </div>
+          );
+        }
+
+        function LineChart({data, months}) {
+          const [hoveredIdx, setHoveredIdx] = React.useState(null);
+          const W=560, H=180, PAD={t:12,r:12,b:4,l:8};
+          const max = Math.max(...data)*1.1;
+          const pts = data.map((v,i)=>{
+            const x = PAD.l + (i/(data.length-1))*(W-PAD.l-PAD.r);
+            const y = PAD.t + (1-v/max)*(H-PAD.t-PAD.b);
+            return [x,y];
+          });
+          const d = pts.map((p,i)=>(i===0?`M${p[0]},${p[1]}`:`C${pts[i-1][0]+20},${pts[i-1][1]} ${p[0]-20},${p[1]} ${p[0]},${p[1]}`)).join(" ");
+          const area = d + ` L${pts[pts.length-1][0]},${H} L${pts[0][0]},${H} Z`;
+          const showMonths = months.filter((_,i)=> i%2===0 || i===months.length-1);
+
+          return (
+            <div className="line-chart-wrap">
+              <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity=".18"/>
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0"/>
+                  </linearGradient>
+                </defs>
+                {[0.25,0.5,0.75,1].map(f=>(
+                  <line key={f} x1={PAD.l} x2={W-PAD.r} y1={PAD.t+(1-f)*(H-PAD.t-PAD.b)} y2={PAD.t+(1-f)*(H-PAD.t-PAD.b)} className="grid-line"/>
+                ))}
+                <path d={area} className="chart-area"/>
+                <path d={d} className="chart-path" style={{strokeDasharray:1200,strokeDashoffset:0}}/>
+                {pts.map(([x,y],i)=>(
+                  <circle key={i} cx={x} cy={y} r={hoveredIdx===i?5:3} className="chart-dot"
+                    onMouseEnter={()=>setHoveredIdx(i)} onMouseLeave={()=>setHoveredIdx(null)}/>
+                ))}
+                {hoveredIdx!==null && (
+                  <g>
+                    <line x1={pts[hoveredIdx][0]} x2={pts[hoveredIdx][0]} y1={PAD.t} y2={H} stroke="var(--accent)" strokeWidth={1} strokeDasharray="4 3" opacity={.5}/>
+                    <rect x={pts[hoveredIdx][0]-32} y={pts[hoveredIdx][1]-28} width={64} height={22} rx={6} fill="var(--accent)"/>
+                    <text x={pts[hoveredIdx][0]} y={pts[hoveredIdx][1]-13} textAnchor="middle" fill="white" fontSize={11} fontWeight={600}>${data[hoveredIdx]}k</text>
+                  </g>
+                )}
+              </svg>
+              <div className="chart-labels">
+                {months.map((m,i)=><span key={i} className="chart-label" style={{opacity:i%2===0?1:0}}>{m}</span>)}
+              </div>
+            </div>
+          );
+        }
+
+        function DonutChart({items}) {
+          const [hov,setHov]=React.useState(null);
+          const COLORS=["#2563eb","#10b981","#f59e0b","#ef4444","#7c3aed","#ec4899"];
+          const total=items.reduce((a,b)=>a+b.value,0);
+          let angle=0;
+          const cx=70,cy=70,R=58,r=35;
+
+          function polarToXY(a,rad) {
+            return [cx+Math.cos(a)*rad, cy+Math.sin(a)*rad];
+          }
+          function slice(start,end,outer,inner) {
+            const [x1,y1]=polarToXY(start,outer);
+            const [x2,y2]=polarToXY(end,outer);
+            const [x3,y3]=polarToXY(end,inner);
+            const [x4,y4]=polarToXY(start,inner);
+            const large=end-start>Math.PI?1:0;
+            return `M${x1},${y1} A${outer},${outer} 0 ${large} 1 ${x2},${y2} L${x3},${y3} A${inner},${inner} 0 ${large} 0 ${x4},${y4} Z`;
+          }
+
+          return (
+            <div className="donut-wrap">
+              <svg width={140} height={140} viewBox="0 0 140 140" className="donut-svg">
+                {items.map((item,i)=>{
+                  const start=angle-Math.PI/2;
+                  const sweep=(item.value/total)*Math.PI*2;
+                  angle+=sweep;
+                  const end=start+sweep;
+                  const isHov=hov===i;
+                  const scale=isHov?1.04:1;
+                  const d=slice(start,end,isHov?R+3:R,r);
+                  return (
+                    <path key={i} d={d} fill={COLORS[i%COLORS.length]} opacity={hov!==null&&!isHov?.5:1}
+                      style={{transition:"all .2s",cursor:"pointer",transform:`scale(${scale})`,transformOrigin:`${cx}px ${cy}px`}}
+                      onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}/>
+                  );
+                })}
+                <circle cx={cx} cy={cy} r={r-2} fill="var(--surface)"/>
+                {hov!==null ? (
+                  <>
+                    <text x={cx} y={cy-6} textAnchor="middle" fontSize={15} fontWeight={700} fill="var(--text)">{Math.round(items[hov].value/total*100)}%</text>
+                    <text x={cx} y={cy+10} textAnchor="middle" fontSize={10} fill="var(--muted)">{items[hov].name}</text>
+                  </>
+                ):(
+                  <>
+                    <text x={cx} y={cy-4} textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--text)">Top</text>
+                    <text x={cx} y={cy+10} textAnchor="middle" fontSize={10} fill="var(--muted)">Items</text>
+                  </>
+                )}
+              </svg>
+              <div className="donut-legend">
+                {items.map((item,i)=>(
+                  <div key={i} className="legend-row" onMouseEnter={()=>setHov(i)} onMouseLeave={()=>setHov(null)}
+                    style={{cursor:"pointer",opacity:hov!==null&&hov!==i?.5:1,transition:"opacity .15s"}}>
+                    <div className="legend-dot" style={{background:COLORS[i%COLORS.length]}}/>
+                    <span className="legend-name">{item.name}</span>
+                    <span className="legend-pct">{Math.round(item.value/total*100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        function Toast({toasts,removeToast}) {
+          return (
+            <div className="toast-wrap">
+              {toasts.map(t=>(
+                <div key={t.id} className={`toast${t.exiting?" exit":""}`}>
+                  <span className="toast-icon">{t.icon}</span>
+                  <div>
+                    <div className="toast-msg">{t.msg}</div>
+                    {t.sub && <div className="toast-sub">{t.sub}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        function AddProductModal({onClose,onAdd,dark}) {
+          const [form,setForm]=React.useState({name:"",emoji:"",category:"",stock:"",price:"",supplier:""});
+          const set=(k,v)=>setForm(p=>({...p,[k]:v}));
+          const submit = ()=>{
+            if(!form.name||!form.price) return;
+            onAdd({
+              id: Date.now(),
+              name:form.name, emoji:form.emoji||"📦",
+              category:form.category||"General",
+              stock:parseInt(form.stock)||0,
+              price:parseFloat(form.price)||0,
+              sold:0,
+              supplier:form.supplier,
+            });
+            onClose();
+          };
+          return (
+            <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+              <div className="modal">
+                <div className="modal-title">Add New Product</div>
+                <div className="field-row">
+                  <div className="field"><label>Emoji</label><input placeholder="🍔" value={form.emoji} onChange={e=>set("emoji",e.target.value)} maxLength={2}/></div>
+                  <div className="field"><label>Product Name *</label><input placeholder="Burger" value={form.name} onChange={e=>set("name",e.target.value)}/></div>
+                </div>
+                <div className="field-row">
+                  <div className="field"><label>Category</label><input placeholder="Fast Food" value={form.category} onChange={e=>set("category",e.target.value)}/></div>
+                  <div className="field"><label>Supplier</label><input placeholder="Fresh Foods Ltd" value={form.supplier} onChange={e=>set("supplier",e.target.value)}/></div>
+                </div>
+                <div className="field-row">
+                  <div className="field"><label>Stock Qty</label><input type="number" placeholder="100" value={form.stock} onChange={e=>set("stock",e.target.value)}/></div>
+                  <div className="field"><label>Price ($) *</label><input type="number" step=".01" placeholder="4.99" value={form.price} onChange={e=>set("price",e.target.value)}/></div>
+                </div>
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+                  <button className="btn btn-primary" onClick={submit}>Add Product</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function AddStockModal({product,onClose,onUpdate}) {
+          const [qty,setQty]=React.useState("");
+          const submit=()=>{ if(!qty) return; onUpdate(product.id, parseInt(qty)); onClose(); };
+          return (
+            <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+              <div className="modal">
+                <div className="modal-title">{product.emoji} Add Stock — {product.name}</div>
+                <div style={{fontSize:13,color:"var(--sub)",marginBottom:16}}>Current stock: <strong style={{color:"var(--text)"}}>{product.stock} units</strong></div>
+                <div className="field"><label>Quantity to Add</label><input type="number" placeholder="50" value={qty} onChange={e=>setQty(e.target.value)} autoFocus/></div>
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+                  <button className="btn btn-primary" onClick={submit}>Add Stock</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function RecordSaleModal({products,onClose,onSale,preProduct}) {
+          const [form,setForm]=React.useState({productId:preProduct||"",qty:""});
+          const set=(k,v)=>setForm(p=>({...p,[k]:v}));
+          const product = products.find(p=>p.id===parseInt(form.productId));
+          const total = product && form.qty ? (product.price * parseInt(form.qty)).toFixed(2) : null;
+          const submit=()=>{
+            if(!product||!form.qty) return;
+            const qty=parseInt(form.qty);
+            if(qty>product.stock){ alert("Not enough stock!"); return; }
+            onSale(product, qty);
+            onClose();
+          };
+          return (
+            <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+              <div className="modal">
+                <div className="modal-title">Record Sale</div>
+                <div className="field"><label>Product *</label>
+                  <select value={form.productId} onChange={e=>set("productId",e.target.value)}>
+                    <option value="">Select product...</option>
+                    {products.map(p=><option key={p.id} value={p.id}>{p.emoji} {p.name} — Stock: {p.stock}</option>)}
+                  </select>
+                </div>
+                <div className="field-row">
+                  <div className="field"><label>Quantity *</label><input type="number" placeholder="1" value={form.qty} onChange={e=>set("qty",e.target.value)}/></div>
+                  <div className="field"><label>Unit Price</label><input value={product?`$${product.price.toFixed(2)}`:"—"} readOnly style={{opacity:.7}}/></div>
+                </div>
+                {total && <div style={{padding:"12px 14px",borderRadius:10,background:"var(--greenBg)",color:"var(--green)",fontWeight:600,fontSize:15,marginTop:4}}>Total: ${total}</div>}
+                <div className="modal-actions">
+                  <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+                  <button className="btn btn-primary" onClick={submit}>Save Sale</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // ─── PAGES ──────────────────────────────────────────────────────────
+
+        function DashboardPage({products, sales, onQuickAction}) {
+          const totalSales = sales.reduce((a,s)=>a+s.amount,0);
+          const totalProfit = totalSales * 0.28;
+          const orders = sales.length;
+          const lowStock = products.filter(p=>p.stock<50).length;
+
+          const topSold = [...products].sort((a,b)=>b.sold-a.sold).slice(0,5);
+          const donutData = topSold.map(p=>({name:p.name,value:p.sold}));
+
+          const topByRev = [...products].sort((a,b)=>(b.sold*b.price)-(a.sold*a.price)).slice(0,5);
+          const recentSales = [...sales].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
+
+          return (
+            <div className="page-enter" style={{display:"flex",flexDirection:"column",gap:20}}>
+              {/* KPIs */}
+              <div className="kpi-grid">
+                <KpiCard label="Total Sales"   value={fmt(totalSales)}  icon="💰" color="blue" trend="12.4% this month"/>
+                <KpiCard label="Total Profit"  value={fmt(totalProfit)} icon="📈" color="green" trend="8.1% this month"/>
+                <KpiCard label="Orders"        value={orders}           icon="🛍️" color="amber"/>
+                <KpiCard label="Low Stock"     value={lowStock}         icon="⚠️" color="red"/>
+              </div>
+
+              {/* Charts */}
+              <div className="charts-row">
+                <div className="card" style={{padding:22}}>
+                  <div className="section-header">
+                    <div>
+                      <div className="section-title">Sales Overview</div>
+                      <div style={{fontSize:12,color:"var(--muted)",marginTop:3}}>Monthly revenue growth</div>
+                    </div>
+                    <span className="chip" style={{background:"var(--greenBg)",color:"var(--green)"}}>↑ 18.4%</span>
+                  </div>
+                  <LineChart data={CHART_DATA} months={MONTHS}/>
+                </div>
+                <div className="card" style={{padding:22}}>
+                  <div className="section-header">
+                    <div>
+                      <div className="section-title">Most Sold Items</div>
+                      <div style={{fontSize:12,color:"var(--muted)",marginTop:3}}>Top 5 by volume</div>
+                    </div>
+                  </div>
+                  <DonutChart items={donutData}/>
+                </div>
+              </div>
+
+              {/* Tables */}
+              <div style={{display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:16}}>
+                <div className="card" style={{padding:22}}>
+                  <div className="section-header">
+                    <div className="section-title">Top Products</div>
+                    <span style={{fontSize:12,color:"var(--muted)"}}>By revenue</span>
+                  </div>
+                  <table className="data-table">
+                    <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                      {topByRev.map(p=>(
+                        <tr key={p.id}>
+                          <td><div className="td-product"><span style={{fontSize:20}}>{p.emoji}</span><span style={{fontWeight:500}}>{p.name}</span></div></td>
+                          <td style={{color:"var(--sub)"}}>{p.sold}</td>
+                          <td style={{fontWeight:600,color:"var(--accent)"}}>{fmt(p.sold*p.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="card" style={{padding:22}}>
+                  <div className="section-header">
+                    <div className="section-title">Recent Sales</div>
+                    <span style={{fontSize:12,color:"var(--muted)"}}>Latest activity</span>
+                  </div>
+                  <table className="data-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Amount</th><th>Date</th></tr></thead>
+                    <tbody>
+                      {recentSales.map(s=>(
+                        <tr key={s.id}>
+                          <td><div className="td-product"><span style={{fontSize:18}}>{s.emoji}</span><span style={{fontWeight:500}}>{s.product}</span></div></td>
+                          <td style={{color:"var(--sub)"}}>{s.qty}</td>
+                          <td style={{fontWeight:600,color:"var(--green)"}}>{fmt(s.amount)}</td>
+                          <td style={{fontSize:12,color:"var(--muted)"}}>{fmtDate(s.date)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="card" style={{padding:22}}>
+                <div className="section-title" style={{marginBottom:16}}>Quick Actions</div>
+                <div className="qa-grid">
+                  {[
+                    {icon:"➕",label:"Add Product",  color:"var(--accentBg)",  action:"addProduct"},
+                    {icon:"💸",label:"Add Sale",     color:"var(--greenBg)",  action:"addSale"},
+                    {icon:"📦",label:"View Inventory",color:"var(--amberBg)", action:"products"},
+                    {icon:"📋",label:"Sales History", color:"var(--redBg)",   action:"sales"},
+                  ].map(q=>(
+                    <div key={q.action} className="qa-btn" onClick={()=>onQuickAction(q.action)}>
+                      <div className="qa-icon" style={{background:q.color,fontSize:22}}>{q.icon}</div>
+                      <span className="qa-label">{q.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function ProductsPage({products,onBack,onAdd,onAddStock,onSale}) {
+          const [search,setSearch]=React.useState("");
+          const [modal,setModal]=React.useState(null);
+          const filtered = products.filter(p=>p.name.toLowerCase().includes(search.toLowerCase())||p.category.toLowerCase().includes(search.toLowerCase()));
+
+          return (
+            <div className="page-enter">
+              <button className="back-btn" onClick={onBack}>← Back to Dashboard</button>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+                <div>
+                  <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:22,fontWeight:800,letterSpacing:"-.5px"}}>Products</h2>
+                  <div style={{fontSize:13,color:"var(--muted)",marginTop:3}}>{products.length} items in inventory</div>
+                </div>
+                <button className="btn btn-primary" onClick={()=>setModal("addProduct")}>+ Add Product</button>
+              </div>
+              <div className="prod-toolbar">
+                <input className="search-input" placeholder="🔍  Search products..." value={search} onChange={e=>setSearch(e.target.value)}/>
+                <span style={{fontSize:13,color:"var(--muted)"}}>{filtered.length} results</span>
+              </div>
+              <div className="prod-grid">
+                {filtered.map(p=>{
+                  const pct = Math.min(p.stock/150*100,100);
+                  const low = p.stock<50;
+                  return (
+                    <div key={p.id} className="card prod-card">
+                      <div className="prod-emoji">{p.emoji}</div>
+                      <div style={{fontWeight:700,fontSize:15}}>{p.name}</div>
+                      <div style={{fontSize:12,color:"var(--muted)",marginBottom:6}}>{p.category}</div>
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
+                        <span style={{color:"var(--sub)"}}>Stock</span>
+                        <span style={{fontWeight:600,color:low?"var(--red)":"var(--text)"}}>{p.stock} units</span>
+                      </div>
+                      <div className="prod-stock-bar">
+                        <div className="prod-stock-fill" style={{width:pct+"%",background:low?"var(--red)":"var(--accent)"}}/>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginTop:10}}>
+                        <span style={{fontWeight:700,color:"var(--accent)"}}>${p.price.toFixed(2)}</span>
+                        <span style={{color:"var(--muted)"}}>Sold: {p.sold}</span>
+                      </div>
+                      {low && <div className="chip" style={{background:"var(--redBg)",color:"var(--red)",marginTop:8,fontSize:11}}>⚠️ Low Stock</div>}
+                      <div style={{display:"flex",gap:7,marginTop:12}}>
+                        <button className="btn btn-ghost" style={{flex:1,fontSize:12,padding:"7px 8px"}} onClick={()=>setModal({type:"stock",product:p})}>+ Stock</button>
+                        <button className="btn btn-primary" style={{flex:1,fontSize:12,padding:"7px 8px"}} onClick={()=>setModal({type:"sale",product:p})}>Sell</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {modal==="addProduct" && <AddProductModal onClose={()=>setModal(null)} onAdd={p=>{onAdd(p);setModal(null);}} dark={false}/>}
+              {modal?.type==="stock" && <AddStockModal product={modal.product} onClose={()=>setModal(null)} onUpdate={(id,q)=>{onAddStock(id,q);setModal(null);}}/>}
+              {modal?.type==="sale" && <RecordSaleModal products={products} onClose={()=>setModal(null)} onSale={(p,q)=>{onSale(p,q);setModal(null);}} preProduct={modal.product.id}/>}
+            </div>
+          );
+        }
+
+        function SalesHistoryPage({sales,onBack}) {
+          const [search,setSearch]=React.useState("");
+          const sorted=[...sales].sort((a,b)=>new Date(b.date)-new Date(a.date));
+          const filtered=sorted.filter(s=>s.product.toLowerCase().includes(search.toLowerCase()));
+          const total=filtered.reduce((a,s)=>a+s.amount,0);
+
+          return (
+            <div className="page-enter">
+              <button className="back-btn" onClick={onBack}>← Back to Dashboard</button>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:12}}>
+                <div>
+                  <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:22,fontWeight:800,letterSpacing:"-.5px"}}>Sales History</h2>
+                  <div style={{fontSize:13,color:"var(--muted)",marginTop:3}}>{filtered.length} transactions · Total: <strong style={{color:"var(--green)"}}>{fmt(total)}</strong></div>
+                </div>
+                <input className="search-input" placeholder="🔍  Search by product..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:220}}/>
+              </div>
+              <div className="card" style={{padding:0,overflow:"hidden"}}>
+                <table className="data-table">
+                  <thead><tr><th>Product</th><th>Quantity</th><th>Amount</th><th>Date</th></tr></thead>
+                  <tbody>
+                    {filtered.length===0 && <tr><td colSpan={4} style={{textAlign:"center",color:"var(--muted)",padding:32}}>No sales records found</td></tr>}
+                    {filtered.map(s=>(
+                      <tr key={s.id}>
+                        <td><div className="td-product"><span style={{fontSize:20}}>{s.emoji}</span><span style={{fontWeight:500}}>{s.product}</span></div></td>
+                        <td><span className="td-badge" style={{background:"var(--accentBg)",color:"var(--accent)"}}>{s.qty} units</span></td>
+                        <td style={{fontWeight:700,color:"var(--green)"}}>{fmt(s.amount)}</td>
+                        <td style={{fontSize:13,color:"var(--muted)"}}>{fmtDate(s.date)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        }
+
+        function SettingsPage({dark,setDark,onBack}) {
+          return (
+            <div className="page-enter">
+              <button className="back-btn" onClick={onBack}>← Back to Dashboard</button>
+              <h2 style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:22,fontWeight:800,letterSpacing:"-.5px",marginBottom:24}}>Settings</h2>
+              <div style={{display:"flex",flexDirection:"column",gap:14,maxWidth:520}}>
+                {[
+                  {label:"Business Name",val:"My Store"},
+                  {label:"Email",val:"owner@mybusiness.com"},
+                  {label:"Currency",val:"USD ($)"},
+                  {label:"Time Zone",val:"UTC-5 (EST)"},
+                ].map(f=>(
+                  <div key={f.label} className="card" style={{padding:"18px 22px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:14,fontWeight:500,color:"var(--sub)"}}>{f.label}</span>
+                    <input defaultValue={f.val} style={{border:"none",background:"transparent",textAlign:"right",fontSize:14,fontWeight:600,color:"var(--text)",outline:"none",width:200,fontFamily:"inherit"}}/>
+                  </div>
+                ))}
+                <div className="card" style={{padding:"18px 22px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:500}}>Dark Mode</div>
+                    <div style={{fontSize:12,color:"var(--muted)"}}>Switch between light and dark theme</div>
+                  </div>
+                  <div onClick={()=>setDark(d=>!d)} style={{width:46,height:26,borderRadius:13,background:dark?"var(--accent)":"var(--border)",cursor:"pointer",position:"relative",transition:"background .25s"}}>
+                    <div style={{position:"absolute",width:20,height:20,borderRadius:"50%",background:"white",top:3,left:dark?23:3,transition:"left .25s",boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}/>
+                  </div>
+                </div>
+                <div style={{marginTop:8}}>
+                  <button className="btn btn-primary">Save Changes</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // ─── APP ROOT ─────────────────────────────────────────────────────────
+        function App() {
+          const [dark,setDark]=React.useState(false);
+          const [page,setPage]=React.useState("dashboard");
+          const [products,setProducts]=React.useState(INITIAL_PRODUCTS);
+          const [sales,setSales]=React.useState(INITIAL_SALES);
+          const [collapsed,setCollapsed]=React.useState(false);
+          const [mobileOpen,setMobileOpen]=React.useState(false);
+          const [modal,setModal]=React.useState(null);
+          const [toasts,setToasts]=React.useState([]);
+
+          const T = dark ? TOKEN.dark : TOKEN.light;
+
+          // Apply CSS vars
+          React.useEffect(()=>{
+            const r = document.documentElement.style;
+            Object.entries(T).forEach(([k,v])=>r.setProperty(`--${k}`,v));
+            document.body.style.background = T.bg;
+            document.body.style.color = T.text;
+          },[T]);
+
+          // Inject styles once
+          React.useEffect(()=>{
+            const s=document.createElement("style");
+            s.textContent=CSS;
+            document.head.appendChild(s);
+            return()=>s.remove();
+          },[]);
+
+          const addToast = React.useCallback((icon,msg,sub)=>{
+            const id=Date.now();
+            setToasts(p=>[...p,{id,icon,msg,sub}]);
+            setTimeout(()=>setToasts(p=>p.map(t=>t.id===id?{...t,exiting:true}:t)),2800);
+            setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3200);
+          },[]);
+
+          const handleAddProduct = (prod)=>{
+            setProducts(p=>[...p,prod]);
+            addToast("✅","Product added!",`${prod.emoji} ${prod.name} added to inventory`);
+            setPage("products");
+          };
+
+          const handleAddStock = (id,qty)=>{
+            setProducts(p=>p.map(pr=>pr.id===id?{...pr,stock:pr.stock+qty}:pr));
+            const prod=products.find(p=>p.id===id);
+            addToast("📦","Stock updated!",`+${qty} units added to ${prod?.name}`);
+          };
+
+          const handleSale = (product, qty)=>{
+            const amount=parseFloat((product.price*qty).toFixed(2));
+            setProducts(p=>p.map(pr=>pr.id===product.id?{...pr,stock:pr.stock-qty,sold:pr.sold+qty}:pr));
+            setSales(p=>[{id:Date.now(),product:product.name,emoji:product.emoji,qty,amount,date:new Date().toISOString().slice(0,10)},...p]);
+            addToast("💸","Sale recorded!",`${product.emoji} ${product.name} ×${qty} — ${fmt(amount)}`);
+          };
+
+          const handleQuickAction = (action)=>{
+            if(action==="addProduct") setModal("addProduct");
+            else if(action==="addSale") setModal("addSale");
+            else if(action==="products") setPage("products");
+            else if(action==="sales") setPage("sales");
+          };
+
+          const nav = (p)=>{ setPage(p); setMobileOpen(false); };
+
+          const notifCount = products.filter(p=>p.stock<50).length;
+
+          return (
+            <div className="app" style={{background:"var(--bg)",color:"var(--text)"}}>
+              {/* Mobile overlay */}
+              <div className={`sidebar-overlay${mobileOpen?" show":""}`} onClick={()=>setMobileOpen(false)}/>
+
+              {/* Sidebar */}
+              <aside className={`sidebar${collapsed?" collapsed":""}${mobileOpen?" mobile-open":""}`} style={{background:"var(--sidebar)"}}>
+                <Logo collapsed={collapsed}/>
+                <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
+                  <NavItem icon="📊" label="Dashboard"     active={page==="dashboard"} onClick={()=>nav("dashboard")} collapsed={collapsed}/>
+                  <NavItem icon="📦" label="Products"      active={page==="products"}  onClick={()=>nav("products")}  collapsed={collapsed}/>
+                  <NavItem icon="📋" label="Sales History" active={page==="sales"}     onClick={()=>nav("sales")}     collapsed={collapsed}
+                    badge={notifCount>0?notifCount:null}/>
+                  <NavItem icon="⚙️" label="Settings"      active={page==="settings"}  onClick={()=>nav("settings")}  collapsed={collapsed}/>
+                </div>
+                <div className="sidebar-bottom">
+                  <NavItem icon="🚪" label="Logout" danger collapsed={collapsed} onClick={()=>addToast("👋","Logged out","See you next time!")}/>
+                </div>
+                {/* Collapse toggle (desktop) */}
+                <div style={{padding:"8px 12px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:collapsed?"center":"flex-end"}}>
+                  <button onClick={()=>setCollapsed(c=>!c)} style={{background:"var(--accentBg)",border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:14,color:"var(--accent)",transition:"all .18s"}}>
+                    {collapsed?"›":"‹"}
+                  </button>
+                </div>
+              </aside>
+
+              {/* Main */}
+              <div className="main">
+                {/* Topbar */}
+                <div className="topbar" style={{background:"var(--surface)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <button className="tb-icon-btn" onClick={()=>setMobileOpen(m=>!m)} style={{display:"none"}} id="hamburger">☰</button>
+                    <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:15,fontWeight:700,color:"var(--muted)"}}>
+                      {page==="dashboard"&&"Overview"}
+                      {page==="products"&&"Products"}
+                      {page==="sales"&&"Sales History"}
+                      {page==="settings"&&"Settings"}
+                    </div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div className="notif-wrap">
+                      <div className="tb-icon-btn" title="Notifications">🔔
+                        {notifCount>0&&<div className="notif-badge"/>}
+                      </div>
+                    </div>
+                    <div className="tb-icon-btn" title="Toggle dark mode" onClick={()=>setDark(d=>!d)}>{dark?"☀️":"🌙"}</div>
+                    <div className="avatar-btn">
+                      <div className="avatar-img">JD</div>
+                      <span className="avatar-name">John D.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="content">
+                  {page==="dashboard" && <DashboardPage products={products} sales={sales} onQuickAction={handleQuickAction}/>}
+                  {page==="products"  && <ProductsPage  products={products} onBack={()=>setPage("dashboard")} onAdd={handleAddProduct} onAddStock={handleAddStock} onSale={handleSale}/>}
+                  {page==="sales"     && <SalesHistoryPage sales={sales} onBack={()=>setPage("dashboard")}/>}
+                  {page==="settings"  && <SettingsPage dark={dark} setDark={setDark} onBack={()=>setPage("dashboard")}/>}
+                </div>
+              </div>
+
+              {/* Global modals */}
+              {modal==="addProduct" && <AddProductModal onClose={()=>setModal(null)} onAdd={handleAddProduct}/>}
+              {modal==="addSale"    && <RecordSaleModal products={products} onClose={()=>setModal(null)} onSale={(p,q)=>{handleSale(p,q);setModal(null);}}/>}
+
+              <Toast toasts={toasts}/>
+            </div>
+          );
+        }
+
+        ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
+</body>
+</html>
