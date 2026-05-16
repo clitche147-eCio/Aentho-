@@ -13,31 +13,12 @@
     
     <script type="text/babel">
         // ─── INITIAL DATA ─────────────────────────────────────────────────────────
-        const INITIAL_PRODUCTS = [
-          { id: 1, name: "Burger", emoji: "🍔", category: "Fast Food", stock: 120, price: 4.99, sold: 87 },
-          { id: 2, name: "Fries",  emoji: "🍟", category: "Fast Food", stock: 95,  price: 2.49, sold: 64 },
-          { id: 3, name: "Cold Drink", emoji: "🧃", category: "Beverages", stock: 80, price: 1.99, sold: 53 },
-          { id: 4, name: "Bread",  emoji: "🍞", category: "Bakery",    stock: 70,  price: 2.29, sold: 42 },
-          { id: 5, name: "Milk",   emoji: "🥛", category: "Dairy",     stock: 40,  price: 1.79, sold: 35 },
-          { id: 6, name: "Pizza Slice", emoji: "🍕", category: "Fast Food", stock: 55, price: 4.49, sold: 61 },
-          { id: 7, name: "Rice",   emoji: "🍚", category: "Grains",    stock: 65,  price: 3.49, sold: 28 },
-          { id: 8, name: "Chicken Pack", emoji: "🍗", category: "Meat", stock: 35, price: 7.99, sold: 44 },
-          { id: 9, name: "Candy",  emoji: "🍬", category: "Snacks",    stock: 100, price: 0.99, sold: 72 },
-        ];
+        const INITIAL_PRODUCTS = [];
 
-        const INITIAL_SALES = [
-          { id: 1, product: "Burger",      emoji: "🍔", qty: 3, amount: 14.97, date: "2025-05-15" },
-          { id: 2, product: "Fries",       emoji: "🍟", qty: 5, amount: 12.45, date: "2025-05-15" },
-          { id: 3, product: "Cold Drink",  emoji: "🧃", qty: 2, amount:  3.98, date: "2025-05-15" },
-          { id: 4, product: "Pizza Slice", emoji: "🍕", qty: 4, amount: 17.96, date: "2025-05-14" },
-          { id: 5, product: "Chicken Pack",emoji: "🍗", qty: 2, amount: 15.98, date: "2025-05-14" },
-          { id: 6, product: "Candy",       emoji: "🍬", qty: 8, amount:  7.92, date: "2025-05-13" },
-          { id: 7, product: "Milk",        emoji: "🥛", qty: 3, amount:  5.37, date: "2025-05-13" },
-          { id: 8, product: "Rice",        emoji: "🍚", qty: 2, amount:  6.98, date: "2025-05-12" },
-        ];
+        const INITIAL_SALES = [];
 
         const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        const CHART_DATA = [28, 42, 38, 55, 62, 58, 74, 68, 82, 79, 91, 88];
+        const CHART_DATA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         // ─── COLOUR TOKENS ────────────────────────────────────────────────────────
         const TOKEN = {
@@ -306,7 +287,7 @@
         function LineChart({data, months}) {
           const [hoveredIdx, setHoveredIdx] = React.useState(null);
           const W=560, H=180, PAD={t:12,r:12,b:4,l:8};
-          const max = Math.max(...data)*1.1;
+          const max = Math.max(...data, 1)*1.1;
           const pts = data.map((v,i)=>{
             const x = PAD.l + (i/(data.length-1))*(W-PAD.l-PAD.r);
             const y = PAD.t + (1-v/max)*(H-PAD.t-PAD.b);
@@ -366,6 +347,22 @@
             const [x4,y4]=polarToXY(start,inner);
             const large=end-start>Math.PI?1:0;
             return `M${x1},${y1} A${outer},${outer} 0 ${large} 1 ${x2},${y2} L${x3},${y3} A${inner},${inner} 0 ${large} 0 ${x4},${y4} Z`;
+          }
+
+          if(total===0) {
+            return (
+              <div className="donut-wrap">
+                <svg width={140} height={140} viewBox="0 0 140 140" className="donut-svg">
+                  <circle cx={70} cy={70} r={58} fill="none" stroke="var(--border)" strokeWidth={23}/>
+                  <circle cx={70} cy={70} r={35} fill="var(--surface)"/>
+                  <text x={70} y={64} textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--text)">No Data</text>
+                  <text x={70} y={78} textAnchor="middle" fontSize={10} fill="var(--muted)">Start selling</text>
+                </svg>
+                <div className="donut-legend" style={{opacity:.5}}>
+                  <div style={{fontSize:13,color:"var(--muted)"}}>Add products and record sales to see data here</div>
+                </div>
+              </div>
+            );
           }
 
           return (
@@ -541,10 +538,10 @@
             <div className="page-enter" style={{display:"flex",flexDirection:"column",gap:20}}>
               {/* KPIs */}
               <div className="kpi-grid">
-                <KpiCard label="Total Sales"   value={fmt(totalSales)}  icon="💰" color="blue" trend="12.4% this month"/>
-                <KpiCard label="Total Profit"  value={fmt(totalProfit)} icon="📈" color="green" trend="8.1% this month"/>
+                <KpiCard label="Total Sales"   value={fmt(totalSales)}  icon="💰" color="blue"/>
+                <KpiCard label="Total Profit"  value={fmt(totalProfit)} icon="📈" color="green"/>
                 <KpiCard label="Orders"        value={orders}           icon="🛍️" color="amber"/>
-                <KpiCard label="Low Stock"     value={lowStock}         icon="⚠️" color="red"/>
+                <KpiCard label="Products"     value={products.length}         icon="📦" color="red"/>
               </div>
 
               {/* Charts */}
@@ -555,7 +552,6 @@
                       <div className="section-title">Sales Overview</div>
                       <div style={{fontSize:12,color:"var(--muted)",marginTop:3}}>Monthly revenue growth</div>
                     </div>
-                    <span className="chip" style={{background:"var(--greenBg)",color:"var(--green)"}}>↑ 18.4%</span>
                   </div>
                   <LineChart data={CHART_DATA} months={MONTHS}/>
                 </div>
@@ -577,37 +573,45 @@
                     <div className="section-title">Top Products</div>
                     <span style={{fontSize:12,color:"var(--muted)"}}>By revenue</span>
                   </div>
-                  <table className="data-table">
-                    <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
-                    <tbody>
-                      {topByRev.map(p=>(
-                        <tr key={p.id}>
-                          <td><div className="td-product"><span style={{fontSize:20}}>{p.emoji}</span><span style={{fontWeight:500}}>{p.name}</span></div></td>
-                          <td style={{color:"var(--sub)"}}>{p.sold}</td>
-                          <td style={{fontWeight:600,color:"var(--accent)"}}>{fmt(p.sold*p.price)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {topByRev.length===0 ? (
+                    <div style={{textAlign:"center",color:"var(--muted)",padding:"40px 20px",fontSize:13}}>No products yet. Add some to get started!</div>
+                  ) : (
+                    <table className="data-table">
+                      <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+                      <tbody>
+                        {topByRev.map(p=>(
+                          <tr key={p.id}>
+                            <td><div className="td-product"><span style={{fontSize:20}}>{p.emoji}</span><span style={{fontWeight:500}}>{p.name}</span></div></td>
+                            <td style={{color:"var(--sub)"}}>{p.sold}</td>
+                            <td style={{fontWeight:600,color:"var(--accent)"}}>{fmt(p.sold*p.price)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
                 <div className="card" style={{padding:22}}>
                   <div className="section-header">
                     <div className="section-title">Recent Sales</div>
                     <span style={{fontSize:12,color:"var(--muted)"}}>Latest activity</span>
                   </div>
-                  <table className="data-table">
-                    <thead><tr><th>Item</th><th>Qty</th><th>Amount</th><th>Date</th></tr></thead>
-                    <tbody>
-                      {recentSales.map(s=>(
-                        <tr key={s.id}>
-                          <td><div className="td-product"><span style={{fontSize:18}}>{s.emoji}</span><span style={{fontWeight:500}}>{s.product}</span></div></td>
-                          <td style={{color:"var(--sub)"}}>{s.qty}</td>
-                          <td style={{fontWeight:600,color:"var(--green)"}}>{fmt(s.amount)}</td>
-                          <td style={{fontSize:12,color:"var(--muted)"}}>{fmtDate(s.date)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {recentSales.length===0 ? (
+                    <div style={{textAlign:"center",color:"var(--muted)",padding:"40px 20px",fontSize:13}}>No sales yet</div>
+                  ) : (
+                    <table className="data-table">
+                      <thead><tr><th>Item</th><th>Qty</th><th>Amount</th><th>Date</th></tr></thead>
+                      <tbody>
+                        {recentSales.map(s=>(
+                          <tr key={s.id}>
+                            <td><div className="td-product"><span style={{fontSize:18}}>{s.emoji}</span><span style={{fontWeight:500}}>{s.product}</span></div></td>
+                            <td style={{color:"var(--sub)"}}>{s.qty}</td>
+                            <td style={{fontWeight:600,color:"var(--green)"}}>{fmt(s.amount)}</td>
+                            <td style={{fontSize:12,color:"var(--muted)"}}>{fmtDate(s.date)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
 
@@ -617,8 +621,8 @@
                 <div className="qa-grid">
                   {[
                     {icon:"➕",label:"Add Product",  color:"var(--accentBg)",  action:"addProduct"},
-                    {icon:"💸",label:"Add Sale",     color:"var(--greenBg)",  action:"addSale"},
-                    {icon:"📦",label:"View Inventory",color:"var(--amberBg)", action:"products"},
+                    {icon:"💸",label:"Record Sale",     color:"var(--greenBg)",  action:"addSale"},
+                    {icon:"📦",label:"Manage Inventory",color:"var(--amberBg)", action:"products"},
                     {icon:"📋",label:"Sales History", color:"var(--redBg)",   action:"sales"},
                   ].map(q=>(
                     <div key={q.action} className="qa-btn" onClick={()=>onQuickAction(q.action)}>
@@ -680,6 +684,7 @@
                   );
                 })}
               </div>
+              {filtered.length===0 && <div style={{textAlign:"center",color:"var(--muted)",padding:"60px 20px"}}>No products found</div>}
 
               {modal==="addProduct" && <AddProductModal onClose={()=>setModal(null)} onAdd={p=>{onAdd(p);setModal(null);}} dark={false}/>}
               {modal?.type==="stock" && <AddStockModal product={modal.product} onClose={()=>setModal(null)} onUpdate={(id,q)=>{onAddStock(id,q);setModal(null);}}/>}
@@ -835,8 +840,7 @@
                 <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
                   <NavItem icon="📊" label="Dashboard"     active={page==="dashboard"} onClick={()=>nav("dashboard")} collapsed={collapsed}/>
                   <NavItem icon="📦" label="Products"      active={page==="products"}  onClick={()=>nav("products")}  collapsed={collapsed}/>
-                  <NavItem icon="📋" label="Sales History" active={page==="sales"}     onClick={()=>nav("sales")}     collapsed={collapsed}
-                    badge={notifCount>0?notifCount:null}/>
+                  <NavItem icon="📋" label="Sales History" active={page==="sales"}     onClick={()=>nav("sales")}     collapsed={collapsed}/>
                   <NavItem icon="⚙️" label="Settings"      active={page==="settings"}  onClick={()=>nav("settings")}  collapsed={collapsed}/>
                 </div>
                 <div className="sidebar-bottom">
@@ -865,9 +869,7 @@
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div className="notif-wrap">
-                      <div className="tb-icon-btn" title="Notifications">🔔
-                        {notifCount>0&&<div className="notif-badge"/>}
-                      </div>
+                      <div className="tb-icon-btn" title="Notifications">🔔</div>
                     </div>
                     <div className="tb-icon-btn" title="Toggle dark mode" onClick={()=>setDark(d=>!d)}>{dark?"☀️":"🌙"}</div>
                     <div className="avatar-btn">
